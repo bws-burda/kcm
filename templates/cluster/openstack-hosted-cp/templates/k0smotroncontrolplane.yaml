@@ -86,18 +86,6 @@ spec:
   {{- if .Values.dataSource.kineDataSourceSecretName }}
   kineDataSourceSecretName: {{ .Values.dataSource.kineDataSourceSecretName  | quote }}
   {{- end }}
-  manifests:
-    - name: manifests
-      configMap:
-        name: {{ include "k0smotroncontrolplane.name" . }}-manifests
-    {{- if $global.registryCredentialSecret }}
-    - name: helm-registry-credentials
-      secret:
-        secretName: {{ $global.registryCredentialSecret }}
-        items:
-          - key: registryCredential
-            path: helm-registry-credentials.yaml
-    {{- end }}
   controllerPlaneFlags:
     - --enable-cloud-provider=true
     - --debug=true
