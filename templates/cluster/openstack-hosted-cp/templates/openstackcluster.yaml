@@ -19,7 +19,9 @@ spec:
     name: {{ .Values.clusterIdentity.name  | quote }}
     cloudName: {{ .Values.identityRef.cloudName | default "openstack"  | quote }}
     region: {{ .Values.identityRef.region | default "RegionOne"  | quote }}
+  {{- if .Values.managedSecurityGroups }}
   managedSecurityGroups: {{- toYaml .Values.managedSecurityGroups | nindent 4 }}
+  {{- end }}
   {{- if .Values.network }}
   network:
     {{- toYaml .Values.network | nindent 4 }}
