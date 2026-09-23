@@ -90,15 +90,6 @@ spec:
       {{- end }}
     {{- end }}
   {{- end }}
-  manifests:
-    {{- if $global.registryCredentialSecret }}
-    - name: helm-registry-credentials
-      secret:
-        secretName: {{ $global.registryCredentialSecret }}
-        items:
-          - key: registryCredential
-            path: helm-registry-credentials.yaml
-    {{- end }}
   controlPlaneFlags:
     - --enable-cloud-provider=true
     - --debug=true
