@@ -1,26 +1,37 @@
+{{- $failureDomains := dict }}
+
+{{- $_ := set $failureDomains "az1" (div .Values.workersNumber 2) }}
+{{- $_ := set $failureDomains "az2" (add (div .Values.workersNumber 2) (mod .Values.workersNumber 2)) }}
+
+{{- range $failureDomain, $workersNumber := $failureDomains }}
+{{- if gt $workersNumber 0 }}
+---
 apiVersion: cluster.x-k8s.io/v1beta2
 kind: MachineDeployment
 metadata:
-  name: {{ include "machinedeployment.name" . }}
+  name: {{ include "machinedeployment.name" $ }}
 spec:
-  clusterName: {{ include "cluster.name" . }}
-  replicas: {{ .Values.workersNumber }}
+  clusterName: {{ include "cluster.name" $ }}
+  replicas: {{ $workersNumber }}
   selector:
     matchLabels:
-      cluster.x-k8s.io/cluster-name: {{ include "cluster.name" . }}
+      cluster.x-k8s.io/cluster-name: {{ include "cluster.name" $ }}
   template:
     metadata:
       labels:
-        cluster.x-k8s.io/cluster-name: {{ include "cluster.name" . }}
+        cluster.x-k8s.io/cluster-name: {{ include "cluster.name" $ }}
     spec:
-      version: {{ regexReplaceAll "\\+k0s.+$" .Values.k0s.version ""  | quote }}
-      clusterName: {{ include "cluster.name" . }}
+      version: {{ regexReplaceAll "\\+k0s.+$" $.Values.k0s.version ""  | quote }}
+      clusterName: {{ include "cluster.name" $ }}
+      failureDomain: {{ $failureDomain }}
       bootstrap:
         configRef:
           apiGroup: bootstrap.cluster.x-k8s.io
           kind: K0sWorkerConfigTemplate
-          name: {{ include "k0sworkerconfigtemplate.name" . }}
+          name: {{ include "k0sworkerconfigtemplate.name" $ }}
       infrastructureRef:
         apiGroup: infrastructure.cluster.x-k8s.io
         kind: OpenStackMachineTemplate
-        name: {{ include "openstackmachinetemplate.name" . }}
+        name: {{ include "openstackmachinetemplate.name" $ }}
+{{- end }}
+{{- end }}
