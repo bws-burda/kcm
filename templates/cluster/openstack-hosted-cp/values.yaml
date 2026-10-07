@@ -131,3 +131,5 @@ k0s: # @schema description: K0s parameters; type: object; additionalProperties: 
 storage:
   etcd:
     autoDeletePVCs: false  # @schema description: Automatically delete etcd PVCs on cluster deletion; type: boolean
+
+failureDomains: [] # @schema description: List of failure domains; type: array; item: string; uniqueItems: true

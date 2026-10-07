@@ -1,10 +1,22 @@
-{{- $failureDomains := dict }}
+{{- $workersPerFailureDomain := dict }}
 
-{{- $_ := set $failureDomains "az1" (div .Values.workersNumber 2) }}
-{{- $_ := set $failureDomains "az2" (add (div .Values.workersNumber 2) (mod .Values.workersNumber 2)) }}
+{{- if .Values.failureDomains }}
+  {{- $numberOfFailureDomains := .Values.failureDomains | len }}
+  {{- $base := div .Values.workersNumber $numberOfFailureDomains }}
+  {{- $remaining := mod .Values.workersNumber $numberOfFailureDomains }}
 
-{{- range $failureDomain, $workersNumber := $failureDomains }}
-{{- if gt $workersNumber 0 }}
+  {{- range $index, $failureDomain := .Values.failureDomains }}
+    {{- $workers := $base }}
+    {{- if lt $index $remaining}}
+      {{- $workers = add $workers 1}}
+    {{- end }}
+    {{- $_ := set $workersPerFailureDomain $failureDomain $workers }}
+  {{- end }}
+{{- else }}
+    {{- $_ := set $workersPerFailureDomain "" .Values.workersNumber }}
+{{- end }}
+
+{{- range $failureDomain, $workers := $workersPerFailureDomain }}
 ---
 apiVersion: cluster.x-k8s.io/v1beta2
 kind: MachineDeployment
@@ -12,7 +24,7 @@ metadata:
   name: {{ include "machinedeployment.name" $ }}
 spec:
   clusterName: {{ include "cluster.name" $ }}
-  replicas: {{ $workersNumber }}
+  replicas: {{ $workers }}
   selector:
     matchLabels:
       cluster.x-k8s.io/cluster-name: {{ include "cluster.name" $ }}
@@ -23,7 +35,9 @@ spec:
     spec:
       version: {{ regexReplaceAll "\\+k0s.+$" $.Values.k0s.version ""  | quote }}
       clusterName: {{ include "cluster.name" $ }}
+      {{- if $failureDomain }}
       failureDomain: {{ $failureDomain }}
+      {{- end }}
       bootstrap:
         configRef:
           apiGroup: bootstrap.cluster.x-k8s.io
@@ -33,5 +47,4 @@ spec:
         apiGroup: infrastructure.cluster.x-k8s.io
         kind: OpenStackMachineTemplate
         name: {{ include "openstackmachinetemplate.name" $ }}
-{{- end }}
 {{- end }}
