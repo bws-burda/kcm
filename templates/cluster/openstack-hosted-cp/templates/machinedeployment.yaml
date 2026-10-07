@@ -17,6 +17,7 @@
 {{- end }}
 
 {{- range $failureDomain, $workers := $workersPerFailureDomain }}
+{{- if gt $workers 0 }}
 ---
 apiVersion: cluster.x-k8s.io/v1beta2
 kind: MachineDeployment
@@ -51,4 +52,5 @@ spec:
         apiGroup: infrastructure.cluster.x-k8s.io
         kind: OpenStackMachineTemplate
         name: {{ include "openstackmachinetemplate.name" $ }}
+{{- end }}
 {{- end }}
