@@ -21,7 +21,11 @@
 apiVersion: cluster.x-k8s.io/v1beta2
 kind: MachineDeployment
 metadata:
+  {{- if $failureDomain }}
+  name: {{ include "machinedeployment.name" $ }}-{{ $failureDomain }}
+  {{- else }}
   name: {{ include "machinedeployment.name" $ }}
+  {{- end }}
 spec:
   clusterName: {{ include "cluster.name" $ }}
   replicas: {{ $workers }}
