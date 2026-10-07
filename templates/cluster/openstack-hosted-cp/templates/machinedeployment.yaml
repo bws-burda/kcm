@@ -52,10 +52,6 @@ spec:
       infrastructureRef:
         apiGroup: infrastructure.cluster.x-k8s.io
         kind: OpenStackMachineTemplate
-        {{- if $failureDomain }}
-        name: {{ include "openstackmachinetemplate.name" $ }}-{{ $failureDomain }}
-        {{- else }}
         name: {{ include "openstackmachinetemplate.name" $ }}
-        {{- end }}
 {{- end }}
 {{- end }}
