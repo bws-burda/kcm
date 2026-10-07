@@ -1,9 +1,10 @@
 {{- $workersPerFailureDomain := dict }}
 
 {{- if .Values.failureDomains }}
-  {{- $numberOfFailureDomains := .Values.failureDomains | len }}
-  {{- $base := div .Values.workersNumber $numberOfFailureDomains }}
-  {{- $remaining := mod .Values.workersNumber $numberOfFailureDomains }}
+  {{- $workersNumber := int .Values.workersNumber }}
+  {{- $numberOfFailureDomains := len .Values.failureDomains }}
+  {{- $base := div $workersNumber $numberOfFailureDomains }}
+  {{- $remaining := mod $workersNumber $numberOfFailureDomains }}
 
   {{- range $index, $failureDomain := .Values.failureDomains }}
     {{- $workers := $base }}
@@ -17,7 +18,7 @@
 {{- end }}
 
 {{- range $failureDomain, $workers := $workersPerFailureDomain }}
-{{- if gt $workers 0 }}
+{{- if gt (int $workers) 0 }}
 ---
 apiVersion: cluster.x-k8s.io/v1beta2
 kind: MachineDeployment
@@ -51,6 +52,10 @@ spec:
       infrastructureRef:
         apiGroup: infrastructure.cluster.x-k8s.io
         kind: OpenStackMachineTemplate
+        {{- if $failureDomain }}
+        name: {{ include "openstackmachinetemplate.name" $ }}-{{ $failureDomain }}
+        {{- else }}
         name: {{ include "openstackmachinetemplate.name" $ }}
+        {{- end }}
 {{- end }}
 {{- end }}
