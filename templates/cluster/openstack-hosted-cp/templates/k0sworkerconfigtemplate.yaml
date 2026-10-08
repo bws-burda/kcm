@@ -9,7 +9,7 @@ spec:
       {{- if $global.k0sURL }}
       downloadURL: "{{ $global.k0sURL }}/k0s-{{ .Values.k0s.version }}-{{ .Values.k0s.arch }}"
       {{- end }}
-      {{- if or $global.registryCertSecret $global.k0sURLCertSecret $global.registryCredentialSecret }}
+      {{- if or $global.registryCertSecret $global.k0sURLCertSecret $global.registryCredentialSecret .Values.extraWorkerConfig }}
       {{/* Drop CAs into a dir Go's crypto/x509 always scans (https://github.com/golang/go/blob/d468ad3648be469ffc4090e4586c29709182d6b6/src/crypto/x509/root_linux.go#L20).
            Works on Debian/RHEL/SUSE/Alpine/Flatcar without update-ca-*; covers containerd
            and the k0s worker binary (both Go). curl for the k0s binary is handled
@@ -33,6 +33,11 @@ spec:
               key: containerdAuth
           permissions: "0664"
           path: /etc/k0s/containerd.d/registry-auth.toml
+        {{- end }}
+        {{- range $_, $extraConfig := .Values.extraWorkerConfig }}
+        - contentFrom: {{ $extraConfig.contentFrom | toJson }}
+          permissions: {{ $extraConfig.permissions | default "0664" | quote }}
+          path: {{ $extraConfig.path }}
         {{- end }}
       {{- end }}
       {{- if $global.k0sURLCertSecret }}

@@ -133,3 +133,12 @@ storage:
     autoDeletePVCs: false  # @schema description: Automatically delete etcd PVCs on cluster deletion; type: boolean
 
 failureDomains: [] # @schema description: List of failure domains; type: array; item: string; uniqueItems: true
+
+extraWorkerConfig: [] # @schema description: List of extra files to upload to the worker; type: array; item: object
+# Example extraWorkerConfig:
+#  - contentFrom:
+#       configMapRef:
+#         name: registry-mirror
+#         key: cri-registry.toml
+#     permissions: "0664"
+#     path: /etc/k0s/containerd.d/cri-registry.toml
